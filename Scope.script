@@ -1,0 +1,62 @@
+﻿REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+#DECLARE RunDate string = "@@RunDate@@";
+
+#DECLARE review_source string = "/shares/ldp-storage/PipelineData/en-GB/Review/MatchMergedReview/Latest/en-GB-ReviewEntityPublished.xml.ss";
+#DECLARE root string = "/local/users/t-mash/data";
+//#DECLARE review_source string = "D:/question_testing/raw_reviews.ss";
+//#DECLARE root string = "D:/question_testing";
+
+#DECLARE temp_output string = @root + "/" + @RunDate;
+#DECLARE file_name string = "reviews_text";
+#DECLARE temp_output_normal string = @temp_output + "/" + @file_name + ".tsv";
+#DECLARE temp_output_ss string = @temp_output + "/" + @file_name + ".ss";
+
+
+#DECLARE output string = @root + "/Latest";
+#DECLARE output_normal string = @output + "/" + @file_name + ".tsv";
+#DECLARE output_ss string = @output + "/" + @file_name + ".ss";
+
+// raw_reviews = SSTREAM @@Input@@;
+raw_reviews =
+    SSTREAM @review_source;
+
+
+
+raw_review_text = 
+    SELECT YPID,
+           ScopeXPath.StringQuery(RecordXml,"/Entity/Reviews/Review/ReviewField") AS text
+    FROM raw_reviews
+        ;
+review_text = 
+    PROCESS raw_review_text
+    USING TextSeperator()
+    PRODUCE
+        YPID,
+        text
+        ;
+        
+OUTPUT review_text
+TO @temp_output_normal;
+OUTPUT review_text
+TO @output_normal;
+OUTPUT review_text
+TO SSTREAM @temp_output_ss
+   HASH CLUSTERED BY YPID;
+OUTPUT review_text
+TO SSTREAM @output_ss
+   HASH CLUSTERED BY YPID;

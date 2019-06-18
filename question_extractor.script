@@ -1,0 +1,69 @@
+﻿//Script GUID:44e0960b-a636-4a15-beb1-986729a923c2
+//Used for tracking history
+
+REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+
+
+
+
+
+#DECLARE RunDate string = "@@RunDate@@";
+#DECLARE cluster_folder string = "@@Cluster@@";
+#DECLARE category string = "@@Category@@";
+#DECLARE root string = "/local/users/t-mash/data";
+#DECLARE temp string = @root + "/" + @RunDate;
+#DECLARE latest string = @root + "/Latest";
+
+#DECLARE cluster_source string = @latest + "/" + @cluster_folder + "/clustering.ss";
+#DECLARE question_source string = @latest + "/questions.ss";
+
+#DECLARE file_name string = @cluster_folder + "/" + @category + "/questions";
+
+#DECLARE latest_tsv string = @latest + "/" + @file_name + ".tsv";
+#DECLARE latest_ss string = @latest + "/" + @file_name + ".ss";
+
+#DECLARE temp_tsv string = @temp + "/" + @file_name + ".tsv";
+#DECLARE temp_ss string = @temp + "/" + @file_name + ".ss";
+
+clusters =
+    SSTREAM @cluster_source;
+
+questions =
+    SSTREAM @question_source;
+
+
+filtered_questions =
+    SELECT question_text,
+           category,
+           cluster_id
+    FROM clusters
+         INNER JOIN
+             questions
+         ON clusters.question_id == questions.question_id
+    WHERE category == @category;
+
+OUTPUT filtered_questions
+    TO @temp_tsv;
+OUTPUT filtered_questions
+    TO @latest_tsv;
+OUTPUT filtered_questions
+    TO SSTREAM @temp_ss
+    HASH CLUSTERED BY cluster_id;
+OUTPUT filtered_questions
+    TO SSTREAM @latest_ss
+    HASH CLUSTERED BY cluster_id;

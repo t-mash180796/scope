@@ -1,0 +1,102 @@
+﻿//Script GUID:d6262e67-1567-4063-8383-a864fb79530b
+//Used for tracking history
+
+REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+
+
+
+
+
+#DECLARE RunDate string = "@@RunDate@@";
+#DECLARE cluster_file string = "@@Cluster_file@@";
+#DECLARE root string = "/local/users/t-mash/data";
+#DECLARE temp string = @root + "/" + @RunDate;
+#DECLARE latest string = @root + "/Latest";
+
+#DECLARE cluster_source string = @latest + "/" + @cluster_file + ".ss";
+#DECLARE question_source string = @latest + "/questions.ss";
+
+
+#DECLARE file_name string = "stats_" + @cluster_file;
+
+#DECLARE latest_tsv string = @latest + "/" + @file_name + ".tsv";
+#DECLARE latest_ss string = @latest + "/" + @file_name + ".ss";
+#DECLARE temp_tsv string = @temp + "/" + @file_name + ".tsv";
+#DECLARE temp_ss string = @temp + "/" + @file_name + ".ss";
+
+
+clusters =
+    SSTREAM @cluster_source;
+questions =
+    SSTREAM @question_source;
+
+
+temp =
+    SELECT question_source,
+           clusters.question_id AS question_id,
+           category,
+           cluster_id
+    FROM clusters
+         INNER JOIN
+             questions
+         ON clusters.question_id == questions.question_id;
+
+temp2 =
+    SELECT COUNT(DISTINCT question_id) AS count,
+           question_source,
+           category,
+           cluster_id
+    GROUP BY question_source,
+             category,
+             cluster_id
+    FROM temp;
+
+temp3 =
+    SELECT count,
+           count * Math.Log(count, 2) AS sub_entropy,
+           question_source,
+           category,
+           cluster_id
+    FROM temp2;
+
+temp4 =
+    SELECT SUM(count) AS cardinality,
+           SUM(sub_entropy) AS numerator,
+           category,
+           cluster_id
+    GROUP BY category,
+             cluster_id
+    FROM temp3;
+
+stats =
+    SELECT category,
+           cluster_id,
+           cardinality,
+           (cardinality * Math.Log(cardinality, 2) - numerator) / cardinality AS entropy
+    FROM temp4;
+
+OUTPUT stats
+TO @temp_tsv;
+OUTPUT stats
+TO @latest_tsv;
+OUTPUT stats
+TO SSTREAM @temp_ss
+   HASH CLUSTERED BY cluster_id;
+OUTPUT stats
+TO SSTREAM @latest_ss
+   HASH CLUSTERED BY cluster_id;

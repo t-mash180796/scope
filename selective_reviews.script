@@ -1,0 +1,65 @@
+﻿//Script GUID:a5a75766-95da-4c19-9cf2-4d96fb1320ec
+//Used for tracking history
+REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+
+
+
+
+
+#DECLARE RunDate string = "@@RunDate@@";
+#DECLARE category string = "@@Category@@";
+
+#DECLARE root string = "/local/users/t-mash/data";
+#DECLARE temp string = @root + "/" + @RunDate;
+#DECLARE latest string = @root + "/Latest";
+
+#DECLARE file_name string = "reviews_text_"+@category;
+
+#DECLARE entity_source string = @latest+"/entities.ss";
+#DECLARE review_source string = @latest+"/reviews_text.ss";
+
+
+#DECLARE latest_tsv string = @latest + "/" + @file_name + ".tsv";
+#DECLARE latest_ss string = @latest + "/" + @file_name + ".ss";
+
+#DECLARE temp_tsv string = @temp + "/" + @file_name + ".tsv";
+#DECLARE temp_ss string = @temp + "/" + @file_name + ".ss";
+
+
+entities = SSTREAM @entity_source;
+reviews = SSTREAM @review_source;
+
+selective_reviews = 
+    SELECT
+        reviews.YPID AS YPID,
+        text
+    FROM entities INNER JOIN reviews
+        ON entities.YPID==reviews.YPID
+    WHERE CategoryId.Contains(@category)
+;
+
+OUTPUT selective_reviews
+    TO @temp_tsv;
+OUTPUT selective_reviews
+    TO @latest_tsv;
+OUTPUT selective_reviews
+    TO SSTREAM @temp_ss
+    HASH CLUSTERED BY YPID;
+OUTPUT selective_reviews
+    TO SSTREAM @latest_ss
+    HASH CLUSTERED BY YPID;

@@ -1,0 +1,101 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>16c30dd3-d824-4337-96b7-b7ac6036d2c3</ProjectGuid>
+    <OutputType>File</OutputType>
+    <AssemblyName>Algebra.xml</AssemblyName>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <Name>Review Minner</Name>
+    <RootNamespace>Review Minner</RootNamespace>
+    <VCSelectionInProjectProperty>&lt;Use Current VC in VC Selector&gt;</VCSelectionInProjectProperty>
+    <CosmosRuntimeVersion>Default</CosmosRuntimeVersion>
+    <ScopePath>%24(SCRIPT_DIR);%24(CLUSTER_ROOT);%24(SCOPE_DIR);%24(PROJECT_DIR)</ScopePath>
+    <InputStreamSearchPath>%24(PROJECT_DIR);%24(SCRIPT_DIR);%24(CLUSTER_ROOT)</InputStreamSearchPath>
+    <VertexDebugSolution>false</VertexDebugSolution>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Script Include="qna.script" />
+    <Script Include="Scope.script">
+      <RemoveUselessParameters>False</RemoveUselessParameters>
+      <ScopeClusterParameters>RunDate=(\"2019/6/11\")</ScopeClusterParameters>
+    </Script>
+    <Script Include="cluster_extractor.script" />
+    <Script Include="L1-filter.script">
+      <RemoveUselessParameters>False</RemoveUselessParameters>
+      <ScopeClusterParameters>RunDate=(\"2019/6/17\"),Category=(\"90232\")</ScopeClusterParameters>
+    </Script>
+    <Script Include="cluster_consolidator.script">
+      <RemoveUselessParameters>False</RemoveUselessParameters>
+      <ScopeClusterParameters>RunDate=(\"2019/6/17\"),Cluster=(\"question_cluster\")</ScopeClusterParameters>
+    </Script>
+    <Script Include="question_extractor.script">
+      <RemoveUselessParameters>False</RemoveUselessParameters>
+      <ScopeClusterParameters>RunDate=(\"2019/6/17\"),Cluster=(\"cluster_4_0.05\"),Category=(\"90232\")</ScopeClusterParameters>
+    </Script>
+    <Script Include="stats_calculator.script">
+      <RemoveUselessParameters>False</RemoveUselessParameters>
+      <ScopeClusterParameters>RunDate=(\"2019/6/17\"),Cluster_file=(\"question_cluster\")</ScopeClusterParameters>
+    </Script>
+    <Script Include="webresource.script">
+      <RemoveUselessParameters>False</RemoveUselessParameters>
+      <ScopeClusterParameters>RunDate=(\"2019/6/12\")</ScopeClusterParameters>
+    </Script>
+    <Script Include="selective_passage.script">
+      <RemoveUselessParameters>False</RemoveUselessParameters>
+      <ScopeClusterParameters>RunDate=(\"2019/6/11\"),Category=(\"90287\")</ScopeClusterParameters>
+    </Script>
+    <Script Include="selective_reviews.script">
+      <RemoveUselessParameters>False</RemoveUselessParameters>
+      <ScopeClusterParameters>RunDate=(\"2019/6/12\"),Category=(\"90287\")</ScopeClusterParameters>
+    </Script>
+    <Script Include="URL_extractor.script">
+      <RemoveUselessParameters>False</RemoveUselessParameters>
+      <ScopeClusterParameters>RunDate=(\"2019/6/12\"),Category=(\"90287\")</ScopeClusterParameters>
+    </Script>
+    <ScriptCode Include="qna.script.cs">
+      <DependentUpon>qna.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Scope.script.cs">
+      <DependentUpon>Scope.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="cluster_extractor.script.cs">
+      <DependentUpon>cluster_extractor.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="L1-filter.script.cs">
+      <DependentUpon>L1-filter.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="cluster_consolidator.script.cs">
+      <DependentUpon>cluster_consolidator.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="question_extractor.script.cs">
+      <DependentUpon>question_extractor.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="stats_calculator.script.cs">
+      <DependentUpon>stats_calculator.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="webresource.script.cs">
+      <DependentUpon>webresource.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="selective_passage.script.cs">
+      <DependentUpon>selective_passage.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="selective_reviews.script.cs">
+      <DependentUpon>selective_reviews.script</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="URL_extractor.script.cs">
+      <DependentUpon>URL_extractor.script</DependentUpon>
+    </ScriptCode>
+  </ItemGroup>
+  <Import Project="$(AppData)\Microsoft\ScopeStudio\MsBuild\1.0\Scope.targets" />
+</Project>

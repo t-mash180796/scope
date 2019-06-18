@@ -1,0 +1,64 @@
+﻿//Script GUID:d9fe1231-2072-4971-bc81-5b7e79b934d9
+//Used for tracking history
+
+REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+
+
+
+
+
+#DECLARE RunDate string = "@@RunDate@@";
+#DECLARE category string = "@@Category@@";
+
+#DECLARE root string = "/local/users/t-mash/data";
+#DECLARE temp string = @root + "/" + @RunDate;
+#DECLARE latest string = @root + "/Latest";
+
+#DECLARE file_name string = "urls_"+@category;
+
+#DECLARE entity_source string = @latest+"/entities.ss";
+#DECLARE web_resource_source string = @latest+"/web.ss";
+
+
+#DECLARE latest_tsv string = @latest + "/" + @file_name + ".tsv";
+#DECLARE latest_ss string = @latest + "/" + @file_name + ".ss";
+
+#DECLARE temp_tsv string = @temp + "/" + @file_name + ".tsv";
+#DECLARE temp_ss string = @temp + "/" + @file_name + ".ss";
+
+entities = SSTREAM @entity_source;
+web_resources = SSTREAM @web_resource_source;
+
+urls =
+    SELECT
+        DISTINCT url AS Url
+    FROM entities INNER JOIN web_resources
+        ON entities.YPID == web_resources.YPID
+    WHERE CategoryId.Contains(@category) && web_resources.url_type IN ("Aggregator","Social")
+;
+
+OUTPUT urls
+    TO @temp_tsv;
+OUTPUT urls
+    TO @latest_tsv;
+OUTPUT urls
+    TO SSTREAM @temp_ss
+    HASH CLUSTERED BY Url;
+OUTPUT urls
+    TO SSTREAM @latest_ss
+    HASH CLUSTERED BY Url;

@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <StartFile>question_extractor.script</StartFile>
+    <CurrentWorkingVC>vc://cosmos08/Local.Relevance</CurrentWorkingVC>
+    <OutputStreamPath>%24(PROJECT_DIR)</OutputStreamPath>
+    <ActiveFile>question_extractor.script</ActiveFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ScriptUserData Include="L1-filter.script">
+      <UseLocalComputeAccount>false</UseLocalComputeAccount>
+      <ClusterComputeAccount>CosmosVc:https://cosmos08.osdinfra.net/cosmos/Local.Relevance/</ClusterComputeAccount>
+    </ScriptUserData>
+    <ScriptUserData Include="qna.script">
+      <UseLocalComputeAccount>false</UseLocalComputeAccount>
+      <ClusterComputeAccount>CosmosVc:https://cosmos08.osdinfra.net/cosmos/Local.Relevance/</ClusterComputeAccount>
+    </ScriptUserData>
+    <ScriptUserData Include="question_extractor.script">
+      <UseLocalComputeAccount>false</UseLocalComputeAccount>
+      <ClusterComputeAccount>CosmosVc:https://cosmos08.osdinfra.net/cosmos/Local.Relevance/</ClusterComputeAccount>
+    </ScriptUserData>
+    <ScriptUserData Include="Scope.script">
+      <UseLocalComputeAccount>false</UseLocalComputeAccount>
+      <ClusterComputeAccount>CosmosVc:https://cosmos08.osdinfra.net/cosmos/Local.Relevance/</ClusterComputeAccount>
+    </ScriptUserData>
+    <ScriptUserData Include="selective_passage.script">
+      <UseLocalComputeAccount>false</UseLocalComputeAccount>
+      <ClusterComputeAccount>CosmosVc:https://cosmos08.osdinfra.net/cosmos/Local.Relevance/</ClusterComputeAccount>
+    </ScriptUserData>
+    <ScriptUserData Include="selective_reviews.script">
+      <UseLocalComputeAccount>false</UseLocalComputeAccount>
+      <ClusterComputeAccount>CosmosVc:https://cosmos08.osdinfra.net/cosmos/Local.Relevance/</ClusterComputeAccount>
+    </ScriptUserData>
+    <ScriptUserData Include="stats_calculator.script">
+      <UseLocalComputeAccount>false</UseLocalComputeAccount>
+      <ClusterComputeAccount>CosmosVc:https://cosmos08.osdinfra.net/cosmos/Local.Relevance/</ClusterComputeAccount>
+    </ScriptUserData>
+    <ScriptUserData Include="URL_extractor.script">
+      <UseLocalComputeAccount>false</UseLocalComputeAccount>
+      <ClusterComputeAccount>CosmosVc:https://cosmos08.osdinfra.net/cosmos/Local.Relevance/</ClusterComputeAccount>
+    </ScriptUserData>
+    <ScriptUserData Include="webresource.script">
+      <UseLocalComputeAccount>false</UseLocalComputeAccount>
+      <ClusterComputeAccount>CosmosVc:https://cosmos08.osdinfra.net/cosmos/Local.Relevance/</ClusterComputeAccount>
+    </ScriptUserData>
+  </ItemGroup>
+</Project>

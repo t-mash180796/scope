@@ -1,0 +1,81 @@
+﻿//Script GUID:4ab9d938-8452-466b-9908-e5e573518510
+//Used for tracking history
+
+REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+
+
+
+
+
+#DECLARE RunDate string = "@@RunDate@@";
+
+ #DECLARE root string = "/local/users/t-mash/data";
+//#DECLARE root string = "D:/question_testing";
+#DECLARE temp string = @root + "/" + @RunDate;
+#DECLARE latest string = @root + "/Latest";
+
+#DECLARE file_name string = "web";
+
+#DECLARE raw_webresource_source string = @latest+"/web_resource.ss";
+//#DECLARE raw_entity_source string= "D:/question_testing/raw_entity.ss";
+#DECLARE raw_entity_source string= "/shares/ldp-storage/PipelineData/en-GB/Publish/EntityIndex/Latest/GBEntityPublished.xml";
+
+
+#DECLARE latest_tsv string = @latest + "/" + @file_name + ".tsv";
+#DECLARE latest_ss string = @latest + "/" + @file_name + ".ss";
+
+#DECLARE temp_tsv string = @temp + "/" + @file_name + ".tsv";
+#DECLARE temp_ss string = @temp + "/" + @file_name + ".ss";
+
+allEntityNodes =
+    EXTRACT entity : string,
+            YPID : string
+    FROM @raw_entity_source
+    USING EntityXMLExtractor();
+
+ deep_url_data =
+     SELECT
+         YPID,
+         ScopeXPath.Query(entity, "EntityIndex/Content/Entity/WebResourceGroup/WebResource") AS web_resource,
+         ScopeXPath.Query(entity, "EntityIndex/Content/Entity/WebResourceGroup/WebResource/Url") AS URLSubEntity,
+         ScopeXPath.Query(entity, "EntityIndex/Content/Entity/WebResourceGroup/WebResource/AppliesTo") AS AppliesToSubEntity,
+         ScopeXPath.Query(entity, "EntityIndex/Content/Entity/WebResourceGroup/WebResource/UrlType") AS UrlTypeSubEntity
+     FROM 
+         allEntityNodes;
+
+deep_url_data =
+   PROCESS deep_url_data
+   USING UrlSegregator()
+   PRODUCE
+       YPID,
+       url,
+       applies_to,
+       url_type
+;
+
+
+OUTPUT deep_url_data
+    TO @temp_tsv;
+OUTPUT deep_url_data
+    TO @latest_tsv;
+OUTPUT deep_url_data
+    TO SSTREAM @temp_ss
+    HASH CLUSTERED BY YPID;
+OUTPUT deep_url_data
+    TO SSTREAM @latest_ss
+    HASH CLUSTERED BY YPID;

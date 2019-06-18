@@ -1,0 +1,62 @@
+﻿//Script GUID:66703503-aaa8-4d81-a37e-2c573f00e119
+//Used for tracking history
+
+REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+
+
+
+
+
+#DECLARE RunDate string = "@@RunDate@@";
+#DECLARE category string = "@@Category@@";
+#DECLARE root string = "/local/users/t-mash/data";
+//#DECLARE root string = "D:/question_testing";
+#DECLARE temp string = @root + "/" + @RunDate;
+#DECLARE latest string = @root + "/Latest";
+
+#DECLARE source string=@latest+"/frequency_"+@category+".csv";
+
+
+#DECLARE latest_tsv string = @latest + "/" + @file_name + ".tsv";
+#DECLARE latest_ss string = @latest + "/" + @file_name + ".ss";
+
+#DECLARE temp_tsv string = @temp + "/" + @file_name + ".tsv";
+#DECLARE temp_ss string = @temp + "/" + @file_name + ".ss";
+
+
+topics = 
+    EXTRACT
+        cluster_id:int,
+        phrase:string,
+        count:int,
+        priority:float
+    FROM @source
+    USING MyCsvExtractor()
+;
+
+
+OUTPUT deep_url_data
+    TO @temp_tsv;
+OUTPUT deep_url_data
+    TO @latest_tsv;
+OUTPUT deep_url_data
+    TO SSTREAM @temp_ss
+    HASH CLUSTERED BY YPID;
+OUTPUT deep_url_data
+    TO SSTREAM @latest_ss
+    HASH CLUSTERED BY YPID;

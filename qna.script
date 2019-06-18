@@ -1,0 +1,67 @@
+﻿//Script GUID:f8b4955e-8389-43df-9903-78ad93288186
+//Used for tracking history
+REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+
+
+
+
+#DECLARE qna_data_source string = "/local/users/t-mash/QnA-Mining/en-GB/Latest/SeedData.tsv";
+
+#DECLARE RunDate string = "@@RunDate@@";
+
+#DECLARE root string = "/local/users/t-mash/data";
+#DECLARE temp_output string = @root + "/" + @RunDate;
+#DECLARE output string = @root + "/Latest";
+
+
+#DECLARE temp_output_normal_questions string = @temp_output + "/questions.tsv";
+#DECLARE temp_output_ss_questions string = @temp_output + "/questions.ss";
+#DECLARE output_normal_questions string = @output + "/questions.tsv";
+#DECLARE output_ss_questions string = @output + "/questions.ss";
+
+qna_data =
+    EXTRACT YPID : string,
+            question_id : string,
+            question_text : string,
+            question_provider : string,
+            question_likes : long,
+            question_ticks : long,
+            question_source : string,
+            answers : string
+    FROM @qna_data_source
+    USING DefaultTextExtractor();
+
+questions =
+    SELECT DISTINCT
+        question_id,
+        question_likes,
+        question_source,
+        question_provider,
+        question_text,
+        question_ticks,
+        answers
+    FROM qna_data;
+
+OUTPUT questions
+TO @temp_output_normal_questions;
+OUTPUT questions
+TO @output_normal_questions;
+OUTPUT questions
+TO SSTREAM @temp_output_ss_questions HASH CLUSTERED BY question_id;
+OUTPUT questions
+TO SSTREAM @output_ss_questions HASH CLUSTERED BY question_id;

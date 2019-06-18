@@ -1,0 +1,107 @@
+﻿//Script GUID:148530b1-347c-45d0-ab4b-4f6c340053fa
+//Used for tracking history
+REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+
+
+
+
+
+#DECLARE RunDate string = "@@RunDate@@";
+#DECLARE category string = "@@Category@@";
+#DECLARE work_space string = "@@Work_Space@@";
+#DECLARE root string = "/local/users/t-mash/data";
+//#DECLARE root string = "D:/question_testing";
+#DECLARE temp string = @root + "/" + @RunDate;
+#DECLARE latest string = @root + "/Latest";
+
+#DECLARE topic_source string = @latest + "/" + @work_space + "/terms.csv";
+#DECLARE review_source string = @latest + "/reviews_text.ss";
+#DECLARE entity_source string = @latest + "/entities.ss";
+
+#DECLARE file_name string = @latest + "/" + @work_space + "/" + "l1";
+
+#DECLARE latest_tsv string = @latest + "/" + @file_name + ".tsv";
+#DECLARE latest_ss string = @latest + "/" + @file_name + ".ss";
+
+#DECLARE temp_tsv string = @temp + "/" + @file_name + ".tsv";
+#DECLARE temp_ss string = @temp + "/" + @file_name + ".ss";
+
+
+topics =
+    EXTRACT cluster_id : string,
+            category:string,
+            phrase : string,
+            count : string,
+            priority : string
+    FROM @topic_source
+    USING DefaultTextExtractor(delimiter: ',');
+
+reviews =
+    SSTREAM @review_source;
+
+entities =
+    SSTREAM @entity_source;
+entities = 
+    SELECT
+        YPID
+    WHERE CategoryId.Contains(@category);  
+
+topics =
+    SELECT *
+    FROM topics
+    WHERE cluster_id != "cluster_id";
+
+
+reviews =
+    SELECT reviews.YPID AS YPID,
+           text
+    FROM reviews
+         INNER JOIN
+             entities
+         ON reviews.YPID == entities.YPID;
+
+answers =
+    SELECT YPID,
+           priority,
+           cluster_id,
+           text,
+           phrase
+    FROM topics
+         CROSS JOIN
+             reviews;
+
+answers = 
+    PROCESS answers
+    PRODUCE YPID,
+           priority,
+           cluster_id,
+           text,
+           phrase
+    USING L1Processor();
+
+
+OUTPUT answers
+TO @temp_tsv;
+OUTPUT answers
+TO @latest_tsv;
+OUTPUT answers
+TO SSTREAM @temp_ss
+   HASH CLUSTERED BY cluster_id;
+OUTPUT answers
+TO SSTREAM @latest_ss
+   HASH CLUSTERED BY cluster_id;

@@ -1,0 +1,66 @@
+﻿//Script GUID:375b1fab-ea12-4c32-9a5c-c56d6c20e1df
+//Used for tracking history
+REFERENCE @"/local/HostnameYPID/DLL/ScopeScriptHelper.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/ScopeXPath.DLL";
+REFERENCE @"/local/HostnameYPID/DLL/LocalDataStorage.dll";
+REFERENCE @"/local/HostnameYPID/DLL/Microsoft.Bing.Sangam.ScopeHelper.dll";
+REFERENCE @"/local/HostnameYPID/DLL/FrontEndUtil.dll";
+RESOURCE @"/local/HostnameYPID/DLL/GetHashUtil.dll";
+
+USING FrontEndUtil;
+USING Microsoft.Bing.Sangam.ScopeHelper;
+USING System;
+USING System.Xml;
+USING ScopeScriptHelper;
+USING CosmosUtil;
+USING System.Linq;
+USING System.Collections.Generic;
+
+
+
+#DECLARE RunDate string = "@@RunDate@@";
+#DECLARE root string = "/local/users/t-mash/data";
+//#DECLARE root string = "D:/question_testing";
+#DECLARE temp string = @root + "/" + @RunDate;
+#DECLARE latest string = @root + "/Latest";
+
+#DECLARE passage_source string = "/shares/WebDataPlatform/local/PassageGen/ToCosmos09/PassagesForMalta/Passages/FlvX/RC1_20181001.ss";
+#DECLARE web_resource_source string = @latest + "/web.ss";
+
+#DECLARE file_name string = "passages";
+
+#DECLARE latest_tsv string = @latest + "/" + @file_name + ".tsv";
+#DECLARE latest_ss string = @latest + "/" + @file_name + ".ss";
+
+#DECLARE temp_tsv string = @temp + "/" + @file_name + ".tsv";
+#DECLARE temp_ss string = @temp + "/" + @file_name + ".ss";
+
+
+web_resources =
+    SSTREAM @web_resource_source;
+
+passages =
+    SSTREAM @passage_source;
+
+urls =
+    SELECT DISTINCT url
+    FROM web_resources
+    WHERE url_type IN("Dedicated") && applies_to NOT IN("Chain");
+
+filtered_passages =
+    SELECT *
+    FROM passages
+         LEFT SEMIJOIN
+             urls
+         ON Url == url;
+
+OUTPUT filtered_passages
+TO @temp_tsv;
+OUTPUT filtered_passages
+TO @latest_tsv;
+OUTPUT filtered_passages
+TO SSTREAM @temp_ss
+   HASH CLUSTERED BY Url;
+OUTPUT filtered_passages
+TO SSTREAM @latest_ss
+   HASH CLUSTERED BY Url;
